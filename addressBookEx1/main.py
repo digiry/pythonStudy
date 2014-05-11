@@ -25,7 +25,7 @@ def printMainMenu():
 3.주소정보를 수정한다.
 4.전체 주소정보를 출력한다.
 5.전체 주소정보를 파일에 저장한다.
-6.주소정보 파일을 파일에 불러온다.
+6.주소정보 파일을 불러온다.
 0.종료한다.
     """
 
@@ -34,7 +34,6 @@ def inputMenu():
     """
     input menu
     """
-    selectedmenu = -1
     selectedmenu = int(raw_input('menu: '))
     return selectedmenu
 
@@ -203,7 +202,7 @@ def saveAddresInfoList(addressInfoList):
     Return : saveResult : boolean : save result
     file record format
     1 line : name
-    2 line : phone
+    2 line : phoneNumber
     3 line : address4
     '''
     saveResult = False
