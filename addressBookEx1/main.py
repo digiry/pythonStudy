@@ -1,13 +1,19 @@
 # -*- coding: utf-8 -*-
 __author__ = 'ninaeros'
 
+import bsddb
+import json
+
 MENU_QUIT = 0
 MENU_INPUT = 1
 MENU_DELETE = 2
 MENU_MODIFY = 3
 MENU_VIEW_ALL = 4
-MENU_SAVE = 5
-MENU_LOAD = 6
+MENU_CLEAN_ALL = 5
+MENU_SAVE = 6
+MENU_LOAD = 7
+MENU_WRITE_DB = 8
+MENU_READ_DB = 9
 
 class AddressInfo:
     name = ''
@@ -25,7 +31,9 @@ def printMainMenu():
 3.주소정보를 수정한다.
 4.전체 주소정보를 출력한다.
 5.전체 주소정보를 파일에 저장한다.
-6.주소정보 파일을 불러온다.
+6.파일에서 전체 주소정보를 불러온다.
+7.전체 주소정보를 DB에 저장한다.
+9.DB에서 전체 주소정보를 불러온다.
 0.종료한다.
     """
 
@@ -104,7 +112,6 @@ def inputAddressInfo(addressInfoList):
     person.address = inputAddress()
     printAddressInfo(person)
     addressInfoList.append(person)
-    return addressInfoList
 
 
 def printAddressInfoList(addressInfoList):
@@ -217,6 +224,32 @@ def saveAddresInfoList(addressInfoList):
         print '전체 주소정보가 저장되었습니다.'
     return saveResult
 
+
+def writeDBAddressInfoList(addressInfoList):
+    db = bsddb.btopen('addressBook.db', 'c')
+    index = 1
+    for info in addressInfoList:
+        db['%d'%index] = json.dumps({'name':info.name, 'phoneNumber':info.phoneNumber, 'address':info.address})
+        index += 1
+    db.sync()
+    db.close()
+    print '전체 주소정보가 DB에 저장되었습니다.'
+
+def readDBAddressInfoList(addressInfoList):
+    clearAddressBook(addressInfoList)
+    db = bsddb.btopen('addressBook.db', 'r')
+    for num, infoDump in db.iteritems():
+        jsonInfo = json.loads(infoDump)
+        person = AddressInfo()
+        person.name = str(jsonInfo[unicode('name')])
+        person.phoneNumber = str(jsonInfo[unicode('phoneNumber')])
+        person.address = str(jsonInfo[unicode('address')])
+        print '%s 번째 정보 불러왔습니다.' % (num)
+        addressInfoList.append(person)
+    db.close()
+    print '전체 주소정보 DB를 모두 불러왔습니다.'
+
+
 def main():
     addressInfoList = []
     selectedMenu = -1
@@ -232,10 +265,16 @@ def main():
             modifyAddressInfo(addressInfoList)
         elif selectedMenu == MENU_VIEW_ALL:
             printAddressInfoList(addressInfoList)
+        elif selectedMenu == MENU_CLEAN_ALL:
+            clearAddressBook(addressInfoList)
         elif selectedMenu == MENU_SAVE:
             saveAddresInfoList(addressInfoList)
         elif selectedMenu == MENU_LOAD:
             loadAddressInfoList(addressInfoList)
+        elif selectedMenu == MENU_WRITE_DB:
+            writeDBAddressInfoList(addressInfoList)
+        elif selectedMenu == MENU_READ_DB:
+            readDBAddressInfoList(addressInfoList)
         elif selectedMenu == MENU_QUIT:
             print '주소록을 종료합니다.'
             break
